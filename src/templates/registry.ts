@@ -1,8 +1,8 @@
-import ModernResume from "@/templates/modern-resume";
+import ModernResume, { css as modernCss } from "@/templates/modern-resume";
 import modernManifest from "@/templates/modern-resume/manifest.json";
 
 const registry = {
-	"modern-resume": { Component: ModernResume, manifest: modernManifest }
+	"modern-resume": { Component: ModernResume, manifest: modernManifest, css: modernCss || "" }
 } as const;
 
 export type TemplateId = keyof typeof registry;

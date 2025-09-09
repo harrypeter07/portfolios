@@ -17,10 +17,10 @@ export function validateAndNormalize(data: unknown) {
 	return { ok: true as const, parsed: parsed.data, normalized };
 }
 
-export function renderTemplateToHtml(templateId: string, normalizedData: any): { html: string; version: string } | null {
+export function renderTemplateToHtml(templateId: string, normalizedData: any): { html: string; version: string; css: string } | null {
 	const entry = getTemplateById(templateId) as any;
 	if (!entry) return null;
-	const { Component, manifest } = entry;
+	const { Component, manifest, css } = entry;
 	const html = renderToString(<Component data={normalizedData} />);
-	return { html, version: manifest.version };
+	return { html, version: manifest.version, css: css || "" };
 }

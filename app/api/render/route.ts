@@ -34,10 +34,9 @@ export async function POST(req: Request) {
 			return res304;
 		}
 
-		const css = "";
 		const res = NextResponse.json({
 			html: rendered.html,
-			css,
+			css: rendered.css,
 			meta: {
 				templateId,
 				version: rendered.version,

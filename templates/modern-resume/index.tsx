@@ -1,3 +1,5 @@
+export const css = "";
+
 export default function ModernResume({ data }: { data: any }) {
 	const personal = data?.personal || {};
 	const about = data?.about || {};

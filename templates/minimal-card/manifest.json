@@ -1,0 +1,8 @@
+{
+	"id": "minimal-card",
+	"name": "Minimal Card",
+	"version": "1.0.0",
+	"author": "Templates App",
+	"description": "Simple profile card template",
+	"previewImage": "/templates/minimal-card/preview.png"
+}
