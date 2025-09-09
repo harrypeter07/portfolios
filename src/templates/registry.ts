@@ -1,8 +1,11 @@
 import ModernResume, { css as modernCss } from "@/templates/modern-resume";
 import modernManifest from "@/templates/modern-resume/manifest.json";
+import MinimalCard, { css as minimalCss } from "@/templates/minimal-card";
+import minimalManifest from "@/templates/minimal-card/manifest.json";
 
 const registry = {
-	"modern-resume": { Component: ModernResume, manifest: modernManifest, css: modernCss || "" }
+	"modern-resume": { Component: ModernResume, manifest: modernManifest, css: modernCss || "" },
+	"minimal-card": { Component: MinimalCard, manifest: minimalManifest, css: minimalCss || "" }
 } as const;
 
 export type TemplateId = keyof typeof registry;
