@@ -138,8 +138,8 @@ export const portfolioSchema = z.object({
 		achievements: achievementsSchema,
 		contact: contactSchema
 	}).optional(),
-	content: z.record(z.any()).optional(),
-	layout: z.record(z.string()).optional(),
+	content: z.record(z.string(), z.any()).optional(),
+	layout: z.record(z.string(), z.string()).optional(),
 	currentTemplate: z.any().optional(),
 	updatedAt: z.string().optional()
 });
