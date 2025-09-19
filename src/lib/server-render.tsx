@@ -1,6 +1,6 @@
 import React from "react";
-import { renderToString } from "react-dom/server";
 
-export function renderComponentToString(Component: React.ComponentType<any>, props: any): string {
+export async function renderComponentToString(Component: React.ComponentType<any>, props: any): Promise<string> {
+	const { renderToString } = await import("react-dom/server");
 	return renderToString(React.createElement(Component, props));
 }

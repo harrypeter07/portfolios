@@ -38,7 +38,7 @@ export default async function PreviewPage({ params, searchParams }: { params: { 
 		);
 	}
 	const { Component, css } = templateInfo;
-	const html = renderComponentToString(Component, { data: validation.normalized });
+	const html = await renderComponentToString(Component, { data: validation.normalized });
 	return (
 		<html>
 			<head>

@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 		}
 
 		const { Component, manifest, css } = templateInfo;
-		const html = renderComponentToString(Component, { data: validation.normalized });
+		const html = await renderComponentToString(Component, { data: validation.normalized });
 
 		const etag = buildETag({
 			id: (validation.parsed as any)._id || (validation.parsed as any).id,
