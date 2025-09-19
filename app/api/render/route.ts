@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { verifyServiceJwt } from "@/src/lib/auth";
 import { buildETag, applyCachingHeaders } from "@/src/lib/cache";
-import { validateAndNormalize, renderTemplateToHtml } from "@/src/lib/renderer";
+import { validateAndNormalize, getTemplateInfo } from "@/src/lib/renderer";
+import { renderComponentToString } from "@/src/lib/server-render";
 
 export async function POST(req: Request) {
 	try {
@@ -13,16 +14,19 @@ export async function POST(req: Request) {
 			return NextResponse.json({ errors: validation.error }, { status: 400 });
 		}
 
-		const rendered = renderTemplateToHtml(templateId, validation.normalized);
-		if (!rendered) {
+		const templateInfo = getTemplateInfo(templateId);
+		if (!templateInfo) {
 			return NextResponse.json({ error: "Template not found" }, { status: 404 });
 		}
+
+		const { Component, manifest, css } = templateInfo;
+		const html = renderComponentToString(Component, { data: validation.normalized });
 
 		const etag = buildETag({
 			id: (validation.parsed as any)._id || (validation.parsed as any).id,
 			updatedAt: (validation.parsed as any).updatedAt || "",
 			templateId,
-			templateVersion: rendered.version,
+			templateVersion: manifest.version,
 			options
 		});
 
@@ -35,11 +39,11 @@ export async function POST(req: Request) {
 		}
 
 		const res = NextResponse.json({
-			html: rendered.html,
-			css: rendered.css,
+			html,
+			css,
 			meta: {
 				templateId,
-				version: rendered.version,
+				version: manifest.version,
 				renderedAt: new Date().toISOString()
 			}
 		});

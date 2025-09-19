@@ -1,5 +1,6 @@
 import { verifyPreviewToken } from "@/src/lib/auth";
-import { validateAndNormalize, renderTemplateToHtml } from "@/src/lib/renderer";
+import { validateAndNormalize, getTemplateInfo } from "@/src/lib/renderer";
+import { renderComponentToString } from "@/src/lib/server-render";
 
 export const dynamic = "force-dynamic";
 
@@ -30,19 +31,22 @@ export default async function PreviewPage({ params, searchParams }: { params: { 
 		);
 	}
 	const templateId = (payload?.templateId as string) || searchParams.templateId || "modern-resume";
-	const rendered = renderTemplateToHtml(templateId, validation.normalized);
-	if (!rendered) {
+	const templateInfo = getTemplateInfo(templateId);
+	if (!templateInfo) {
 		return (
 			<html><body><p>Template not found</p></body></html>
 		);
 	}
+	const { Component, css } = templateInfo;
+	const html = renderComponentToString(Component, { data: validation.normalized });
 	return (
 		<html>
 			<head>
 				<meta charSet="utf-8" />
 				<title>Preview - {params.username}</title>
+				<style dangerouslySetInnerHTML={{ __html: css }} />
 			</head>
-			<body dangerouslySetInnerHTML={{ __html: rendered.html }} />
+			<body dangerouslySetInnerHTML={{ __html: html }} />
 		</html>
 	);
 }

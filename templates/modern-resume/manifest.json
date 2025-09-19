@@ -3,6 +3,19 @@
 	"name": "Modern Resume",
 	"version": "1.0.0",
 	"author": "Templates App",
-	"description": "Clean, modern resume layout suitable for portfolios",
-	"previewImage": "/templates/modern-resume/preview.png"
+	"description": "Clean, professional resume template with comprehensive sections",
+	"previewImage": "/templates/modern-resume/preview.png",
+	"requiredSections": ["personal", "about", "experience"],
+	"supportedExports": ["html", "pdf", "png"],
+	"tags": ["developer", "clean", "professional", "comprehensive"],
+	"features": [
+		"Responsive design",
+		"Professional typography",
+		"Skills categorization",
+		"Technology tags",
+		"Social links",
+		"Contact information",
+		"Achievements section",
+		"Education details"
+	]
 }
