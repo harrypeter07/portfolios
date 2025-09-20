@@ -154,7 +154,7 @@ export const css = `
 
 export default function ModernResume({ data }: { data: any }) {
 	const normalized = normalizePortfolioData(data);
-	const { personal, about, projects, skills, experience, education, achievements } = normalized;
+	const { personal, about, projects, skills, experience, education, achievements, contact, metadata, theme } = normalized;
 
 	return (
 		<div className="modern-resume">
@@ -163,6 +163,7 @@ export default function ModernResume({ data }: { data: any }) {
 				<h1 className="name">{personal.fullName}</h1>
 				{personal.subtitle && <h2 className="subtitle">{personal.subtitle}</h2>}
 				{personal.tagline && <p className="tagline">{personal.tagline}</p>}
+				{personal.availability && <p className="availability">{personal.availability}</p>}
 				
 				<div className="contact-info">
 					{personal.email && <span>{personal.email}</span>}
@@ -179,67 +180,89 @@ export default function ModernResume({ data }: { data: any }) {
 					<div className="social-links">
 						{personal.social.linkedin && <a href={personal.social.linkedin} target="_blank" rel="noopener">LinkedIn</a>}
 						{personal.social.github && <a href={personal.social.github} target="_blank" rel="noopener">GitHub</a>}
-						{personal.social.website && <a href={personal.social.website} target="_blank" rel="noopener">Website</a>}
+						{personal.social.portfolio && <a href={personal.social.portfolio} target="_blank" rel="noopener">Portfolio</a>}
 						{personal.social.twitter && <a href={personal.social.twitter} target="_blank" rel="noopener">Twitter</a>}
+						{personal.social.medium && <a href={personal.social.medium} target="_blank" rel="noopener">Medium</a>}
+						{personal.social.youtube && <a href={personal.social.youtube} target="_blank" rel="noopener">YouTube</a>}
 					</div>
 				)}
 			</section>
 
 			{/* About Section */}
-			{about.summary && (
+			{(about.summary || about.bio) && (
 				<section className="section">
 					<h2>About</h2>
-					<p>{about.summary}</p>
+					{about.summary && <p>{about.summary}</p>}
+					{about.bio && <p>{about.bio}</p>}
 					{about.interests?.length > 0 && (
 						<div>
 							<h3>Interests</h3>
 							<p>{about.interests.join(", ")}</p>
 						</div>
 					)}
+					{about.personalValues?.length > 0 && (
+						<div>
+							<h3>Values</h3>
+							<p>{about.personalValues.join(", ")}</p>
+						</div>
+					)}
+					{about.funFacts?.length > 0 && (
+						<div>
+							<h3>Fun Facts</h3>
+							<p>{about.funFacts.join(", ")}</p>
+						</div>
+					)}
 				</section>
 			)}
 
 			{/* Skills Section */}
-			{(skills.technical?.length > 0 || skills.soft?.length > 0 || skills.frameworks?.length > 0 || skills.tools?.length > 0) && (
+			{(skills.technical?.length > 0 || skills.soft?.length > 0 || skills.languages?.length > 0) && (
 				<section className="section">
 					<h2>Skills</h2>
 					<div className="skills-grid">
+						{/* Technical Skills */}
 						{skills.technical?.length > 0 && (
 							<div className="skill-category">
-								<h3>Technical</h3>
-								<div className="technologies">
-									{skills.technical.map((skill: string, i: number) => (
-										<span key={i} className="tech-tag">{skill}</span>
-									))}
-								</div>
+								<h3>Technical Skills</h3>
+								{skills.technical.map((category: any, i: number) => (
+									<div key={i}>
+										<h4>{category.category}</h4>
+										<div className="technologies">
+											{category.skills?.map((skill: any, j: number) => (
+												<span key={j} className="tech-tag" title={`${skill.level} - ${skill.years} years`}>
+													{skill.name}
+													{skill.certified && " ✓"}
+												</span>
+											))}
+										</div>
+									</div>
+								))}
 							</div>
 						)}
-						{skills.frameworks?.length > 0 && (
-							<div className="skill-category">
-								<h3>Frameworks</h3>
-								<div className="technologies">
-									{skills.frameworks.map((skill: string, i: number) => (
-										<span key={i} className="tech-tag">{skill}</span>
-									))}
-								</div>
-							</div>
-						)}
-						{skills.tools?.length > 0 && (
-							<div className="skill-category">
-								<h3>Tools</h3>
-								<div className="technologies">
-									{skills.tools.map((skill: string, i: number) => (
-										<span key={i} className="tech-tag">{skill}</span>
-									))}
-								</div>
-							</div>
-						)}
+						
+						{/* Soft Skills */}
 						{skills.soft?.length > 0 && (
 							<div className="skill-category">
 								<h3>Soft Skills</h3>
 								<div className="technologies">
-									{skills.soft.map((skill: string, i: number) => (
-										<span key={i} className="tech-tag">{skill}</span>
+									{skills.soft.map((skill: any, i: number) => (
+										<span key={i} className="tech-tag" title={skill.description}>
+											{skill.name}
+										</span>
+									))}
+								</div>
+							</div>
+						)}
+						
+						{/* Languages */}
+						{skills.languages?.length > 0 && (
+							<div className="skill-category">
+								<h3>Languages</h3>
+								<div className="technologies">
+									{skills.languages.map((lang: any, i: number) => (
+										<span key={i} className="tech-tag" title={lang.proficiency}>
+											{lang.name} ({lang.proficiency})
+										</span>
 									))}
 								</div>
 							</div>

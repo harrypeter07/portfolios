@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 		console.log(`[${requestId}] API key verification successful`);
 
 		const { templateId, data, options } = await req.json();
-		console.log(`[${requestId}] Template ID: ${templateId}, Username: ${data?.username || 'unknown'}`);
+		console.log(`[${requestId}] Template ID: ${templateId}, Username: ${data?.username || data?.data?.personal?.firstName || 'unknown'}`);
 		
 		// Validate and normalize data
 		const validation = validateAndNormalize(data);

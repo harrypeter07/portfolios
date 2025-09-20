@@ -12,7 +12,9 @@ export function validateAndNormalize(data: unknown) {
 	if (!parsed.success) {
 		return { ok: false as const, error: parsed.error.flatten() };
 	}
-	const portfolioData = (parsed.data as any).portfolioData || (parsed.data as any);
+	
+	// Handle new schema format (data.data) or legacy format (portfolioData)
+	const portfolioData = (parsed.data as any).data || (parsed.data as any).portfolioData || (parsed.data as any);
 	const normalized = normalizePortfolioData(portfolioData);
 	return { ok: true as const, parsed: parsed.data, normalized };
 }
