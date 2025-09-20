@@ -378,7 +378,7 @@ export async function POST(request) {
     const apiKey = getTemplatesApiKey();
 
     // 3. Call Templates App with correct data structure
-    const templatesAppUrl = process.env.TEMPLATES_APP_URL || "https://portumet.vercel.app";
+    const templatesAppUrl = process.env.TEMPLATES_APP_URL || "http://localhost:3001";
     const response = await fetch(`${templatesAppUrl}/api/render`, {
       method: 'POST',
       headers: {
