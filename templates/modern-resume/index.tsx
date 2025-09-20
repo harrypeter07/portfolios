@@ -502,7 +502,7 @@ export default function ModernResume({ data }: { data: any }) {
 							{achievements.awards.map((award: any, i: number) => (
 								<div key={i} className="achievement-item">
 									<h4>{award.title}</h4>
-									<p><strong>{award.organization}</strong></h4>
+									<p><strong>{award.organization}</strong></p>
 									{award.date && <p className="achievement-date">{award.date}</p>}
 									{award.description && <p>{award.description}</p>}
 									{award.link && <a href={award.link} target="_blank" rel="noopener">View Award</a>}

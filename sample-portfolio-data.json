@@ -1,0 +1,285 @@
+{
+  "templateId": "modern-resume",
+  "data": {
+    "personal": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "title": "Full Stack Developer",
+      "subtitle": "Building digital experiences that matter",
+      "email": "john@example.com",
+      "phone": "+1 (555) 123-4567",
+      "location": {
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA"
+      },
+      "social": {
+        "linkedin": "https://linkedin.com/in/johndoe",
+        "github": "https://github.com/johndoe",
+        "portfolio": "https://johndoe.dev",
+        "twitter": "https://twitter.com/johndoe",
+        "medium": "https://medium.com/@johndoe"
+      },
+      "avatar": "/path/to/avatar.jpg",
+      "tagline": "Passionate about creating scalable web applications",
+      "availability": "Available for new opportunities"
+    },
+    "about": {
+      "summary": "Experienced full-stack developer with 5+ years building web applications using modern technologies. Passionate about clean code, user experience, and continuous learning.",
+      "bio": "I'm a dedicated software engineer who loves solving complex problems and building products that make a difference. When I'm not coding, you can find me contributing to open source projects or writing technical articles.",
+      "interests": ["Open Source", "Machine Learning", "Web Performance", "Photography"],
+      "personalValues": ["Quality", "Collaboration", "Continuous Learning", "Innovation"],
+      "funFacts": ["Coffee enthusiast", "Marathon runner", "Tech blogger", "Dog lover"]
+    },
+    "experience": {
+      "jobs": [
+        {
+          "id": "1",
+          "company": "Tech Corp",
+          "position": "Senior Full Stack Developer",
+          "location": "San Francisco, CA",
+          "startDate": "Jan 2022",
+          "endDate": "",
+          "current": true,
+          "description": "Lead development of scalable web applications using React and Node.js. Responsible for architecture decisions and mentoring junior developers.",
+          "responsibilities": [
+            "Architected and built microservices handling 100k+ daily requests",
+            "Led a team of 4 developers in building core platform features",
+            "Implemented CI/CD pipelines reducing deployment time by 70%",
+            "Mentored junior developers and conducted code reviews"
+          ],
+          "achievements": [
+            "Increased application performance by 40% through optimization",
+            "Reduced bug reports by 60% through comprehensive testing",
+            "Led migration to microservices architecture"
+          ],
+          "technologies": ["React", "Node.js", "TypeScript", "AWS", "Docker", "PostgreSQL"],
+          "projects": ["E-commerce Platform", "Analytics Dashboard", "Mobile App Backend"]
+        },
+        {
+          "id": "2",
+          "company": "StartupXYZ",
+          "position": "Full Stack Developer",
+          "location": "Remote",
+          "startDate": "Jun 2020",
+          "endDate": "Dec 2021",
+          "current": false,
+          "description": "Developed and maintained web applications for a fast-growing startup. Worked closely with product team to deliver features on tight deadlines.",
+          "responsibilities": [
+            "Built responsive web applications using React and Express.js",
+            "Integrated third-party APIs and payment systems",
+            "Optimized database queries and application performance"
+          ],
+          "achievements": [
+            "Reduced page load time by 50%",
+            "Implemented automated testing reducing bugs by 30%"
+          ],
+          "technologies": ["React", "Express.js", "MongoDB", "Stripe", "Jest"]
+        }
+      ]
+    },
+    "education": {
+      "degrees": [
+        {
+          "id": "1",
+          "institution": "University of Technology",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "grade": "3.8 GPA",
+          "startDate": "2016",
+          "endDate": "2020",
+          "current": false,
+          "description": "Focused on software engineering, data structures, and algorithms. Participated in multiple hackathons and coding competitions.",
+          "courses": ["Data Structures", "Algorithms", "Database Systems", "Software Engineering", "Machine Learning"],
+          "activities": ["Programming Club President", "Hackathon Winner", "Teaching Assistant"],
+          "honors": ["Dean's List", "Magna Cum Laude", "Outstanding Student Award"],
+          "thesis": "Machine Learning Applications in Web Development"
+        }
+      ]
+    },
+    "skills": {
+      "technical": [
+        {
+          "category": "Frontend",
+          "skills": [
+            {
+              "name": "React",
+              "level": "expert",
+              "years": 4,
+              "certified": false
+            },
+            {
+              "name": "JavaScript",
+              "level": "expert",
+              "years": 5,
+              "certified": false
+            },
+            {
+              "name": "TypeScript",
+              "level": "advanced",
+              "years": 3,
+              "certified": false
+            }
+          ]
+        },
+        {
+          "category": "Backend",
+          "skills": [
+            {
+              "name": "Node.js",
+              "level": "expert",
+              "years": 4,
+              "certified": false
+            },
+            {
+              "name": "Python",
+              "level": "advanced",
+              "years": 3,
+              "certified": false
+            }
+          ]
+        }
+      ],
+      "soft": [
+        {
+          "name": "Leadership",
+          "description": "Led multiple development teams and mentored junior developers",
+          "examples": ["Team Lead at Tech Corp", "Mentored 5+ junior developers"]
+        },
+        {
+          "name": "Communication",
+          "description": "Excellent presentation and writing skills",
+          "examples": ["Tech talks at conferences", "Technical blog with 10k+ readers"]
+        }
+      ],
+      "languages": [
+        {
+          "name": "English",
+          "proficiency": "native",
+          "certification": ""
+        },
+        {
+          "name": "Spanish",
+          "proficiency": "conversational",
+          "certification": ""
+        }
+      ]
+    },
+    "projects": {
+      "items": [
+        {
+          "id": "1",
+          "title": "E-commerce Platform",
+          "description": "Full-stack e-commerce solution with payment integration",
+          "longDescription": "Built a complete e-commerce platform handling thousands of transactions daily. Implemented real-time inventory management, payment processing with Stripe, and comprehensive admin dashboard.",
+          "category": "Web Application",
+          "tags": ["E-commerce", "Full-stack", "Payments"],
+          "technologies": ["React", "Node.js", "MongoDB", "Stripe", "AWS"],
+          "status": "completed",
+          "startDate": "2023-01",
+          "endDate": "2023-06",
+          "images": ["/projects/ecommerce-1.jpg", "/projects/ecommerce-2.jpg"],
+          "links": {
+            "live": "https://shop.example.com",
+            "github": "https://github.com/johndoe/ecommerce",
+            "demo": "https://demo.shop.example.com"
+          },
+          "features": ["Payment Processing", "Inventory Management", "User Analytics", "Admin Dashboard"],
+          "challenges": ["Scaling to handle high traffic", "Real-time inventory updates", "Payment security"],
+          "learnings": ["Microservices architecture", "Payment security best practices", "Performance optimization"],
+          "teamSize": 3,
+          "role": "Lead Developer",
+          "client": "Retail Corp",
+          "metrics": {
+            "users": "10,000+ active users",
+            "performance": "99.9% uptime",
+            "impact": "$2M+ in processed transactions"
+          },
+          "testimonial": {
+            "text": "John delivered an exceptional e-commerce platform that exceeded our expectations. The performance and user experience are outstanding.",
+            "author": "Sarah Johnson",
+            "title": "CTO, Retail Corp"
+          }
+        }
+      ]
+    },
+    "achievements": {
+      "awards": [
+        {
+          "id": "1",
+          "title": "Developer of the Year",
+          "organization": "Tech Corp",
+          "date": "2023",
+          "description": "Recognized for outstanding contributions to platform development and team leadership",
+          "category": "recognition"
+        }
+      ],
+      "certifications": [
+        {
+          "id": "1",
+          "name": "AWS Certified Solutions Architect",
+          "organization": "Amazon Web Services",
+          "issueDate": "2023-03",
+          "expiryDate": "2026-03",
+          "credentialId": "AWS-SAA-123456",
+          "verificationLink": "https://aws.amazon.com/verification/123456",
+          "skills": ["Cloud Architecture", "AWS Services", "Security"]
+        }
+      ],
+      "publications": [
+        {
+          "id": "1",
+          "title": "Building Scalable React Applications",
+          "type": "article",
+          "publisher": "Medium",
+          "date": "2023-05",
+          "description": "Comprehensive guide on architecting large-scale React applications with best practices",
+          "link": "https://medium.com/@johndoe/building-scalable-react",
+          "citations": 150
+        }
+      ]
+    },
+    "contact": {
+      "email": "john@example.com",
+      "phone": "+1 (555) 123-4567",
+      "preferredContact": "email",
+      "timezone": "PST",
+      "availability": "Available for freelance and full-time opportunities",
+      "rates": {
+        "hourly": "$75-100",
+        "project": "Varies by scope",
+        "retainer": "Available"
+      },
+      "services": ["Web Development", "Technical Consulting", "Code Reviews"],
+      "workingHours": "9 AM - 5 PM PST",
+      "responseTime": "Within 24 hours"
+    },
+    "metadata": {
+      "title": "John Doe - Full Stack Developer Portfolio",
+      "description": "Experienced full-stack developer specializing in React and Node.js",
+      "keywords": ["Full Stack Developer", "React", "Node.js", "JavaScript", "Web Development"],
+      "canonicalUrl": "https://johndoe.dev"
+    },
+    "theme": {
+      "primaryColor": "#3B82F6",
+      "secondaryColor": "#1E40AF",
+      "accentColor": "#F59E0B",
+      "backgroundColor": "#FFFFFF",
+      "textColor": "#1F2937",
+      "font": "Inter",
+      "darkMode": false,
+      "animations": true,
+      "layout": "modern"
+    },
+    "analytics": {
+      "googleAnalytics": "",
+      "googleTagManager": "",
+      "customEvents": []
+    }
+  },
+  "options": {
+    "draft": false,
+    "version": "v1",
+    "format": "html"
+  }
+}

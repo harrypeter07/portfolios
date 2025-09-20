@@ -271,7 +271,7 @@ const analyticsSchema = z.object({
 // Main portfolio schema
 export const portfolioSchema = z.object({
 	// Template identification
-	templateId: z.string(),
+	templateId: z.string().optional(),
 	
 	// Complete portfolio data
 	data: z.object({
@@ -286,7 +286,7 @@ export const portfolioSchema = z.object({
 		metadata: metadataSchema,
 		theme: themeSchema,
 		analytics: analyticsSchema
-	}),
+	}).optional(),
 	
 	// Optional rendering options
 	options: z.object({
