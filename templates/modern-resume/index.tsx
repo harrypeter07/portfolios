@@ -135,6 +135,56 @@ export const css = `
 		padding: 4px 0;
 		color: #4b5563;
 	}
+	.availability {
+		color: #059669;
+		font-weight: 500;
+		margin-bottom: 15px;
+	}
+	.project-meta {
+		margin: 8px 0;
+	}
+	.project-category, .project-status {
+		display: inline-block;
+		background: #f3f4f6;
+		color: #374151;
+		padding: 2px 8px;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		margin-right: 8px;
+	}
+	.project-metrics {
+		background: #f9fafb;
+		padding: 12px;
+		border-radius: 6px;
+		margin: 12px 0;
+	}
+	.project-testimonial {
+		background: #f0f9ff;
+		padding: 12px;
+		border-left: 4px solid #3b82f6;
+		margin: 12px 0;
+	}
+	.project-testimonial blockquote {
+		margin: 0 0 8px 0;
+		font-style: italic;
+	}
+	.project-testimonial cite {
+		font-size: 0.9rem;
+		color: #6b7280;
+	}
+	.achievement-item {
+		margin-bottom: 20px;
+		padding-bottom: 15px;
+		border-bottom: 1px solid #f3f4f6;
+	}
+	.achievement-item:last-child {
+		border-bottom: none;
+	}
+	.achievement-date {
+		color: #6b7280;
+		font-size: 0.9rem;
+		margin: 4px 0;
+	}
 	@media (max-width: 600px) {
 		.modern-resume {
 			padding: 15px;
@@ -284,13 +334,18 @@ export default function ModernResume({ data }: { data: any }) {
 								{job.current && " • Current"}
 							</div>
 							{job.description && <p>{job.description}</p>}
-							{job.technologies?.length > 0 && (
-								<div className="technologies">
-									{job.technologies.map((tech: string, j: number) => (
-										<span key={j} className="tech-tag">{tech}</span>
-									))}
+							
+							{job.responsibilities?.length > 0 && (
+								<div>
+									<h4>Key Responsibilities:</h4>
+									<ul>
+										{job.responsibilities.map((resp: string, j: number) => (
+											<li key={j}>{resp}</li>
+										))}
+									</ul>
 								</div>
 							)}
+							
 							{job.achievements?.length > 0 && (
 								<div>
 									<h4>Key Achievements:</h4>
@@ -299,6 +354,21 @@ export default function ModernResume({ data }: { data: any }) {
 											<li key={j}>{achievement}</li>
 										))}
 									</ul>
+								</div>
+							)}
+							
+							{job.technologies?.length > 0 && (
+								<div className="technologies">
+									{job.technologies.map((tech: string, j: number) => (
+										<span key={j} className="tech-tag">{tech}</span>
+									))}
+								</div>
+							)}
+							
+							{job.projects?.length > 0 && (
+								<div>
+									<h4>Notable Projects:</h4>
+									<p>{job.projects.join(", ")}</p>
 								</div>
 							)}
 						</div>
@@ -314,6 +384,15 @@ export default function ModernResume({ data }: { data: any }) {
 						<div key={i} className="project-item">
 							<h3>{project.name}</h3>
 							{project.description && <p>{project.description}</p>}
+							{project.longDescription && <p>{project.longDescription}</p>}
+							
+							{project.category && (
+								<div className="project-meta">
+									<span className="project-category">{project.category}</span>
+									{project.status && <span className="project-status">{project.status}</span>}
+								</div>
+							)}
+							
 							{project.technologies?.length > 0 && (
 								<div className="technologies">
 									{project.technologies.map((tech: string, j: number) => (
@@ -321,10 +400,42 @@ export default function ModernResume({ data }: { data: any }) {
 									))}
 								</div>
 							)}
-							{(project.url || project.github) && (
+							
+							{project.features?.length > 0 && (
+								<div>
+									<h4>Key Features:</h4>
+									<ul>
+										{project.features.map((feature: string, j: number) => (
+											<li key={j}>{feature}</li>
+										))}
+									</ul>
+								</div>
+							)}
+							
+							{project.metrics && (
+								<div className="project-metrics">
+									<h4>Impact:</h4>
+									{Object.entries(project.metrics).map(([key, value]: [string, any]) => (
+										<p key={key}><strong>{key}:</strong> {value}</p>
+									))}
+								</div>
+							)}
+							
+							{(project.url || project.github || project.links) && (
 								<div className="project-links">
 									{project.url && <a href={project.url} target="_blank" rel="noopener">Live Demo</a>}
 									{project.github && <a href={project.github} target="_blank" rel="noopener">GitHub</a>}
+									{project.links?.live && <a href={project.links.live} target="_blank" rel="noopener">Live Demo</a>}
+									{project.links?.github && <a href={project.links.github} target="_blank" rel="noopener">GitHub</a>}
+									{project.links?.demo && <a href={project.links.demo} target="_blank" rel="noopener">Demo</a>}
+									{project.links?.documentation && <a href={project.links.documentation} target="_blank" rel="noopener">Docs</a>}
+								</div>
+							)}
+							
+							{project.testimonial && (
+								<div className="project-testimonial">
+									<blockquote>"{project.testimonial.text}"</blockquote>
+									<cite>— {project.testimonial.author}, {project.testimonial.title}</cite>
 								</div>
 							)}
 						</div>
@@ -341,14 +452,37 @@ export default function ModernResume({ data }: { data: any }) {
 							<h3>{degree.degree} in {degree.field}</h3>
 							<p><strong>{degree.institution}</strong></p>
 							<div className="degree-meta">
-								{degree.location && `${degree.location} • `}
 								{degree.year}
-								{degree.gpa && ` • GPA: ${degree.gpa}`}
+								{degree.grade && ` • ${degree.grade}`}
+								{degree.current && " • Current"}
 							</div>
+							{degree.description && <p>{degree.description}</p>}
+							
+							{degree.courses?.length > 0 && (
+								<div>
+									<h4>Relevant Coursework:</h4>
+									<p>{degree.courses.join(", ")}</p>
+								</div>
+							)}
+							
+							{degree.activities?.length > 0 && (
+								<div>
+									<h4>Activities:</h4>
+									<p>{degree.activities.join(", ")}</p>
+								</div>
+							)}
+							
 							{degree.honors?.length > 0 && (
 								<div>
 									<h4>Honors:</h4>
 									<p>{degree.honors.join(", ")}</p>
+								</div>
+							)}
+							
+							{degree.thesis && (
+								<div>
+									<h4>Thesis:</h4>
+									<p>{degree.thesis}</p>
 								</div>
 							)}
 						</div>
@@ -357,37 +491,82 @@ export default function ModernResume({ data }: { data: any }) {
 			)}
 
 			{/* Achievements Section */}
-			{(achievements.awards?.length > 0 || achievements.certifications?.length > 0 || achievements.publications?.length > 0) && (
+			{(achievements.awards?.length > 0 || achievements.certifications?.length > 0 || achievements.publications?.length > 0 || achievements.patents?.length > 0) && (
 				<section className="section">
 					<h2>Achievements</h2>
+					
+					{/* Awards */}
 					{achievements.awards?.length > 0 && (
 						<div>
 							<h3>Awards</h3>
-							<ul className="achievement-list">
-								{achievements.awards.map((award: string, i: number) => (
-									<li key={i}>{award}</li>
-								))}
-							</ul>
+							{achievements.awards.map((award: any, i: number) => (
+								<div key={i} className="achievement-item">
+									<h4>{award.title}</h4>
+									<p><strong>{award.organization}</strong></h4>
+									{award.date && <p className="achievement-date">{award.date}</p>}
+									{award.description && <p>{award.description}</p>}
+									{award.link && <a href={award.link} target="_blank" rel="noopener">View Award</a>}
+								</div>
+							))}
 						</div>
 					)}
+					
+					{/* Certifications */}
 					{achievements.certifications?.length > 0 && (
 						<div>
 							<h3>Certifications</h3>
-							<ul className="achievement-list">
-								{achievements.certifications.map((cert: string, i: number) => (
-									<li key={i}>{cert}</li>
-								))}
-							</ul>
+							{achievements.certifications.map((cert: any, i: number) => (
+								<div key={i} className="achievement-item">
+									<h4>{cert.name}</h4>
+									<p><strong>{cert.organization}</strong></p>
+									{cert.issueDate && <p className="achievement-date">Issued: {cert.issueDate}</p>}
+									{cert.expiryDate && <p className="achievement-date">Expires: {cert.expiryDate}</p>}
+									{cert.credentialId && <p>Credential ID: {cert.credentialId}</p>}
+									{cert.verificationLink && <a href={cert.verificationLink} target="_blank" rel="noopener">Verify</a>}
+									{cert.skills?.length > 0 && (
+										<div className="technologies">
+											{cert.skills.map((skill: string, j: number) => (
+												<span key={j} className="tech-tag">{skill}</span>
+											))}
+										</div>
+									)}
+								</div>
+							))}
 						</div>
 					)}
+					
+					{/* Publications */}
 					{achievements.publications?.length > 0 && (
 						<div>
 							<h3>Publications</h3>
-							<ul className="achievement-list">
-								{achievements.publications.map((pub: string, i: number) => (
-									<li key={i}>{pub}</li>
-								))}
-							</ul>
+							{achievements.publications.map((pub: any, i: number) => (
+								<div key={i} className="achievement-item">
+									<h4>{pub.title}</h4>
+									<p><strong>{pub.publisher}</strong> • {pub.type}</p>
+									{pub.date && <p className="achievement-date">{pub.date}</p>}
+									{pub.description && <p>{pub.description}</p>}
+									{pub.citations && <p>Citations: {pub.citations}</p>}
+									{pub.link && <a href={pub.link} target="_blank" rel="noopener">Read</a>}
+									{pub.coAuthors?.length > 0 && <p>Co-authors: {pub.coAuthors.join(", ")}</p>}
+								</div>
+							))}
+						</div>
+					)}
+					
+					{/* Patents */}
+					{achievements.patents?.length > 0 && (
+						<div>
+							<h3>Patents</h3>
+							{achievements.patents.map((patent: any, i: number) => (
+								<div key={i} className="achievement-item">
+									<h4>{patent.title}</h4>
+									<p>Patent #{patent.number} • Status: {patent.status}</p>
+									{patent.date && <p className="achievement-date">{patent.date}</p>}
+									{patent.description && <p>{patent.description}</p>}
+									{patent.inventors?.length > 0 && <p>Inventors: {patent.inventors.join(", ")}</p>}
+									{patent.assignee && <p>Assignee: {patent.assignee}</p>}
+								</div>
+							))}
 						</div>
 					)}
 				</section>
