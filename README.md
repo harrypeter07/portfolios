@@ -1,168 +1,443 @@
-# Templates App (portume templates)
+# Templates App - Architecture & Integration Guide
 
-Stateless Next.js App Router service that server-renders portfolio templates and returns HTML/CSS to the Main App (portume.vercel.app). MongoDB/auth/analytics live in the Main App. This service is secured via service-to-service JWT and uses ETag + Cache-Control for caching.
+**For Main App Agent**: Complete guide to integrate with the Templates App for portfolio rendering.
 
-## Domains
-- Main App: `portume.vercel.app`
-- Templates App: `templates.portume.com` (deploy this on Vercel)
+## 🏗️ Architecture Overview
 
-## Endpoints
-- POST `/api/render` (protected)
-  - Body: `{ templateId, data, options? }`
-  - Auth: `Authorization: Bearer <jwt>` (HS256; `scope: "render"`)
-  - Validates payload with Zod, SSRs template to HTML, returns `{ html, css, meta }`
-  - Caching: `ETag` + `Cache-Control: public, s-maxage=300, stale-while-revalidate=600` and 304 support
-- GET `/api/templates/manifest`
-  - Returns array of available template manifests
-  - Cache: `s-maxage=86400`
-- GET `/preview/[username]` (optional preview/pull)
-  - Query: `?token=<signed>` (HS256)
-  - Verifies token, pulls portfolio from `${MAIN_API_BASE}`, renders full HTML page for previews/rewrites
+**Templates App** is a stateless Next.js App Router service that server-renders portfolio templates and returns HTML/CSS to the Main App. It's designed for high performance with JWT security, ETag caching, and comprehensive portfolio data handling.
 
-## Environment variables
-- `SHARED_JWT_SECRET` (required): HS256 for service auth
-- `ALLOWED_ORIGINS` (optional): CSV, e.g. `https://portume.vercel.app`
-- `MAIN_API_BASE` (optional, preview): e.g. `https://portume.vercel.app`
-- `PREVIEW_JWT_SECRET` (optional): HS256 for preview links (can reuse `SHARED_JWT_SECRET`)
+### Key Principles
+- **Stateless**: No database, all data provided by Main App
+- **Secure**: Service-to-service JWT authentication
+- **Fast**: ETag + Cache-Control headers with 304 support
+- **Flexible**: Template registry with comprehensive data schema
+- **Scalable**: Server-side rendering with Next.js App Router
 
-## Data schema (shared)
-Zod schema located at `packages/shared/portfolioSchema.ts`. Import via `shared/portfolioSchema`.
-- Normalized shape uses `portfolioData` from Main App but also accepts `content` fallback.
+## 🌐 Domains & Deployment
 
-## Templates
-- Folder per template: `templates/<templateId>`
-  - `index.tsx`: default export React component `(props: { data: any })`, SSR-only; optional `export const css = string`
-  - `manifest.json`: `{ id, name, version, description, previewImage }`
-  - `assets/`, `styles/` optional
-- Register in `src/templates/registry.ts`:
-  - Maps id → `{ Component, manifest, css }`
-- Example templates:
-  - `modern-resume`: full resume layout
-  - `minimal-card`: lightweight profile card
+- **Main App**: `portume.vercel.app`
+- **Templates App**: `templates.portume.com` (deploy on Vercel)
+- **Co-location**: Deploy in same Vercel region for optimal performance
 
-## Important files
-- `app/api/render/route.ts`: JWT verify, validate, SSR, ETag/Cache-Control, 304
-- `app/api/templates/manifest/route.ts`: returns manifests
-- `app/api/render/export/route.ts`: stub for PDF/PNG (501)
-- `app/preview/[username]/page.tsx`: signed preview pull and full HTML page
-- `src/lib/auth.ts`: HS256 verification (service/preview)
-- `src/lib/cache.ts`: ETag builder and cache headers
-- `src/lib/renderer.ts`: validation, normalization, SSR helper, returns html+css+version
-- `src/templates/registry.ts`: template registry
-- `packages/shared/*`: shared Zod schema and exports
+## 🔌 API Endpoints
 
-## TypeScript / Config
-- `tsconfig.json`: App Router friendly config with path aliases:
-  - `@/*` → project root
-  - `shared/*` → `packages/shared/*`
+### 1. POST `/api/render` (Primary Endpoint)
+**Purpose**: Render portfolio data into HTML/CSS using specified template
 
-## How to add a new portfolio template
-1. Create `templates/<your-id>/index.tsx` exporting default component and optional `css`.
-2. Replace mock/hardcoded data with reads from `props.data` per shared schema.
-3. Add `templates/<your-id>/manifest.json`.
-4. Register in `src/templates/registry.ts`.
-5. Test via `POST /api/render` using `templateId` and valid JWT.
-
-## Change log (what was added/modified)
-- Added TypeScript config with aliases: `tsconfig.json`
-- Created shared schema package: `packages/shared/{package.json, tsconfig.json, index.ts, portfolioSchema.ts}`
-- Implemented auth utilities: `src/lib/auth.ts`
-- Implemented cache utilities: `src/lib/cache.ts`
-- Implemented renderer helper: `src/lib/renderer.ts`
-- Created template registry and templates:
-  - `src/templates/registry.ts`
-  - `templates/modern-resume/{index.tsx, manifest.json, styles.css}`
-  - `templates/minimal-card/{index.tsx, manifest.json}`
-  - `templates/README.md` (migration guide)
-- Implemented APIs:
-  - `app/api/render/route.ts` (returns `{ html, css, meta }`, ETag, 304)
-  - `app/api/templates/manifest/route.ts`
-  - `app/api/render/export/route.ts` (stub)
-- Implemented optional preview page: `app/preview/[username]/page.tsx`
-
-## How the Apps Connect (Data Flow)
-
-### 1. JWT Secret Connection
-- **YES, `SHARED_JWT_SECRET` is your main app's JWT secret**
-- Both apps must use the SAME secret for HS256 JWT verification
-- Main app creates JWTs with `scope: "render"` and sends them to Templates app
-- Templates app verifies these JWTs using the same secret
-
-### 2. Data Flow Options
-
-**Option A: Server-side Proxy (Recommended)**
+**Authentication**: 
+```http
+Authorization: Bearer <jwt>
 ```
-User → Main App (portume.vercel.app) → Templates App (templates.portume.com)
-```
-1. User visits `portume.vercel.app/username`
-2. Main app fetches portfolio data from MongoDB
-3. Main app calls `POST templates.portume.com/api/render` with:
-   - `Authorization: Bearer <jwt>` (created with your main app's JWT secret)
-   - Body: `{ templateId: "modern-resume", data: portfolioData }`
-4. Templates app returns `{ html, css, meta }`
-5. Main app serves the HTML to user
 
-**Option B: Preview/Edge Rewrite**
-```
-User → Templates App (templates.portume.com/preview/username?token=<signed>)
-```
-1. Main app creates signed preview URL with JWT token
-2. User visits Templates app directly
-3. Templates app fetches portfolio from `MAIN_API_BASE/api/portfolio/username?token=<signed>`
-4. Templates app renders and serves full HTML page
-
-### 3. Deployment Steps
-
-**Deploy Templates App:**
-1. Push this code to GitHub
-2. Deploy on Vercel as `templates.portume.com`
-3. Set environment variables:
-   - `SHARED_JWT_SECRET` = your main app's JWT secret
-   - `MAIN_API_BASE` = `https://portume.vercel.app`
-   - `ALLOWED_ORIGINS` = `https://portume.vercel.app`
-
-**Update Main App:**
-1. Add server-side API route to call Templates app:
-```javascript
-// In your main app: app/api/render-portfolio/route.js
-export async function POST(request) {
-  const portfolioData = await getPortfolioFromDB();
-  const jwt = await createJWT({ scope: "render" }); // Use your existing JWT secret
-  
-  const response = await fetch('https://templates.portume.com/api/render', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${jwt}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      templateId: portfolioData.templateId,
-      data: portfolioData
-    })
-  });
-  
-  return response.json(); // { html, css, meta }
+**Request Body**:
+```json
+{
+  "templateId": "modern-resume",
+  "data": {
+    "username": "john_doe",
+    "templateId": "modern-resume",
+    "portfolioData": {
+      "personal": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "title": "Full Stack Developer"
+      },
+      "projects": {
+        "items": [
+          {
+            "title": "E-commerce Platform",
+            "description": "Built with React and Node.js",
+            "technologies": ["React", "Node.js", "MongoDB"]
+          }
+        ]
+      }
+    }
+  },
+  "options": {}
 }
 ```
 
-### 4. Current Schema Coverage
-The current schema includes ALL major portfolio sections:
-- ✅ **Personal**: firstName, lastName, title, subtitle, tagline, email, phone, location, social
-- ✅ **About**: summary
-- ✅ **Projects**: items with title, description, links, technologies
-- ✅ **Skills**: technical, soft, languages
-- ✅ **Experience**: jobs with position, company, dates, description, technologies
-- ✅ **Education**: degrees with institution, field, dates, grades
-- ✅ **Achievements**: awards, certifications, publications
-- ✅ **Theme**: color, font
-- ✅ **Layout**: custom layout options
+**Response**:
+```json
+{
+  "html": "<div class=\"modern-resume\">...</div>",
+  "css": ".modern-resume { font-family: Inter; }",
+  "meta": {
+    "templateId": "modern-resume",
+    "version": "1.0.0",
+    "renderedAt": "2024-01-15T10:30:00.000Z"
+  }
+}
+```
 
-### 5. What's Left to Do
-1. **Deploy Templates App** to Vercel
-2. **Update Main App** to call Templates app (server-side proxy)
-3. **Add more templates** by copying your Next.js/Vite portfolios to `templates/<id>/`
-4. **Test the connection** with a real portfolio
+**Headers**:
+- `ETag`: `"abc123..."` (for caching)
+- `Cache-Control`: `public, s-maxage=300, stale-while-revalidate=600`
 
-## Notes
-- No database in this service. All data is provided by the Main App.
-- Co-locate in the same region as Main App; CDN cache enabled via headers.
+**304 Support**: Send `If-None-Match: "abc123..."` header to get 304 if content unchanged.
+
+### 2. GET `/api/templates/manifest`
+**Purpose**: Get list of available templates
+
+**Response**:
+```json
+[
+  {
+    "id": "modern-resume",
+    "name": "Modern Resume",
+    "version": "1.0.0",
+    "description": "Clean, professional resume template",
+    "requiredSections": ["personal", "about", "experience"],
+    "tags": ["developer", "clean", "professional"]
+  }
+]
+```
+
+### 3. GET `/preview/[username]` (Optional)
+**Purpose**: Direct preview with signed token (for edge rewrites)
+
+**URL**: `https://templates.portume.com/preview/john_doe?token=<signed_jwt>`
+
+**Returns**: Full HTML page with embedded CSS
+
+## 🔐 Security & Authentication
+
+### JWT Configuration
+**Shared Secret**: Use your Main App's existing JWT secret for `SHARED_JWT_SECRET`
+
+**JWT Payload Requirements**:
+```json
+{
+  "scope": "render",
+  "exp": 1642234567,
+  "iat": 1642234267
+}
+```
+
+**Token Creation** (in Main App):
+```javascript
+import { SignJWT } from 'jose';
+
+const jwt = await new SignJWT({ scope: "render" })
+  .setProtectedHeader({ alg: "HS256" })
+  .setIssuedAt()
+  .setExpirationTime("5m")
+  .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+```
+
+### Environment Variables
+```bash
+# Required
+SHARED_JWT_SECRET=your-main-app-jwt-secret
+
+# Optional
+MAIN_API_BASE=https://portume.vercel.app
+ALLOWED_ORIGINS=https://portume.vercel.app
+PREVIEW_JWT_SECRET=your-preview-secret  # can reuse SHARED_JWT_SECRET
+```
+
+## 📊 Data Schema & Validation
+
+### Portfolio Data Structure
+The Templates App uses a comprehensive Zod schema that handles all portfolio sections with smart fallbacks:
+
+```typescript
+interface PortfolioData {
+  personal?: {
+    firstName?: string;
+    lastName?: string;
+    title?: string;
+    subtitle?: string;
+    tagline?: string;
+    email?: string;
+    phone?: string;
+    location?: { city?: string; state?: string; country?: string };
+    social?: {
+      linkedin?: string;
+      github?: string;
+      twitter?: string;
+      website?: string;
+      instagram?: string;
+      facebook?: string;
+    };
+  };
+  about?: {
+    summary?: string;
+    interests?: string[];
+    values?: string[];
+    funFacts?: string[];
+  };
+  projects?: {
+    items?: Array<{
+      title?: string;
+      name?: string;  // fallback for title
+      description?: string;
+      technologies?: string[];
+      links?: {
+        live?: string;
+        github?: string;
+        demo?: string;
+      };
+      url?: string;  // fallback for links.live
+      github?: string;  // fallback for links.github
+    }>;
+  };
+  skills?: {
+    technical?: string[];
+    soft?: string[];
+    languages?: string[];
+    tools?: string[];
+    frameworks?: string[];
+    databases?: string[];
+  };
+  experience?: {
+    jobs?: Array<{
+      position?: string;
+      title?: string;  // fallback for position
+      company?: string;
+      location?: string;
+      startDate?: string;
+      endDate?: string;
+      duration?: string;  // auto-computed if not provided
+      description?: string;
+      technologies?: string[];
+      achievements?: string[];
+      current?: boolean;
+    }>;
+  };
+  education?: {
+    degrees?: Array<{
+      degree?: string;
+      field?: string;
+      institution?: string;
+      location?: string;
+      startDate?: string;
+      endDate?: string;
+      year?: string;  // auto-computed if not provided
+      grade?: string;
+      gpa?: string;
+      honors?: string[];
+      relevantCoursework?: string[];
+    }>;
+  };
+  achievements?: {
+    awards?: string[];
+    certifications?: string[];
+    publications?: string[];
+    recognitions?: string[];
+  };
+  contact?: {
+    email?: string;
+    phone?: string;
+    location?: string;
+    linkedin?: string;
+    github?: string;
+    website?: string;
+  };
+}
+```
+
+### Data Normalization
+The app automatically handles fallbacks:
+- `title` OR `name` for project names
+- `position` OR `title` for job titles
+- `links.live` OR `url` for project URLs
+- Auto-computes `duration` from `startDate`/`endDate`
+- Combines `firstName` + `lastName` into `fullName`
+
+## 🎨 Available Templates
+
+### 1. `modern-resume`
+**Features**:
+- Professional typography with Inter font
+- Responsive design (mobile-friendly)
+- Skills categorization (technical, frameworks, tools, soft skills)
+- Technology tags with styling
+- Social links integration
+- Comprehensive sections: Personal, About, Skills, Experience, Projects, Education, Achievements
+
+**CSS**: Embedded critical CSS for optimal performance
+
+### 2. `minimal-card`
+**Features**:
+- Lightweight profile card
+- Basic styling with border and padding
+- Minimal data requirements
+
+## 🔄 Integration Patterns
+
+### Pattern 1: Server-Side Proxy (Recommended)
+```javascript
+// In your Main App: app/api/render-portfolio/route.js
+export async function POST(request) {
+  try {
+    // 1. Get portfolio data from your database
+    const portfolioData = await getPortfolioFromDB(request.body.username);
+    
+    // 2. Create JWT token
+    const jwt = await new SignJWT({ scope: "render" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("5m")
+      .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+    
+    // 3. Call Templates App
+    const response = await fetch('https://templates.portume.com/api/render', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        templateId: portfolioData.templateId,
+        data: portfolioData
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Templates App error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    // 4. Return HTML/CSS to client
+    return new Response(result.html, {
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, s-maxage=300',
+        'ETag': response.headers.get('ETag')
+      }
+    });
+    
+  } catch (error) {
+    return new Response('Render failed', { status: 500 });
+  }
+}
+```
+
+### Pattern 2: Edge Rewrite (Alternative)
+```javascript
+// In your Main App: middleware.js
+export function middleware(request) {
+  if (request.nextUrl.pathname.startsWith('/portfolio/')) {
+    const username = request.nextUrl.pathname.split('/')[2];
+    
+    // Create signed preview URL
+    const token = createPreviewToken(username);
+    const previewUrl = `https://templates.portume.com/preview/${username}?token=${token}`;
+    
+    return NextResponse.rewrite(previewUrl);
+  }
+}
+```
+
+## 🚀 Deployment Checklist
+
+### Templates App Deployment
+1. **Push to GitHub**: Ensure all code is committed
+2. **Deploy on Vercel**: 
+   - Connect GitHub repository
+   - Set domain as `templates.portume.com`
+   - Configure environment variables
+3. **Environment Variables**:
+   ```bash
+   SHARED_JWT_SECRET=your-main-app-jwt-secret
+   MAIN_API_BASE=https://portume.vercel.app
+   ALLOWED_ORIGINS=https://portume.vercel.app
+   ```
+
+### Main App Integration
+1. **Add API Route**: Create `/api/render-portfolio/route.js`
+2. **Update Portfolio Pages**: Use the new API route
+3. **Test Integration**: Verify JWT creation and Templates App communication
+4. **Monitor Performance**: Check ETag caching and response times
+
+## 🧪 Testing
+
+### Test Template Rendering
+```bash
+curl -X POST https://templates.portume.com/api/render \
+  -H "Authorization: Bearer <your-jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId": "modern-resume",
+    "data": {
+      "username": "test_user",
+      "templateId": "modern-resume",
+      "portfolioData": {
+        "personal": {
+          "firstName": "John",
+          "lastName": "Doe",
+          "email": "john@example.com"
+        }
+      }
+    }
+  }'
+```
+
+### Test Template Manifest
+```bash
+curl https://templates.portume.com/api/templates/manifest
+```
+
+## 📁 File Structure
+
+```
+templates-app/
+├── app/
+│   ├── api/
+│   │   ├── render/route.ts          # Main rendering endpoint
+│   │   ├── templates/manifest/route.ts  # Template list
+│   │   └── render/export/route.ts   # Future PDF/PNG export
+│   └── preview/[username]/page.tsx  # Direct preview page
+├── src/
+│   ├── lib/
+│   │   ├── auth.ts                  # JWT verification
+│   │   ├── cache.ts                 # ETag & cache headers
+│   │   ├── renderer.ts              # Data validation & normalization
+│   │   └── server-render.tsx        # SSR utilities
+│   └── templates/
+│       └── registry.ts              # Template registry
+├── templates/
+│   ├── modern-resume/               # Professional resume template
+│   │   ├── index.tsx
+│   │   ├── manifest.json
+│   │   └── styles.css
+│   └── minimal-card/                # Simple card template
+│       ├── index.tsx
+│       └── manifest.json
+└── packages/shared/
+    └── portfolioSchema.ts           # Comprehensive data schema
+```
+
+## 🔧 Adding New Templates
+
+1. **Create Template Folder**: `templates/<template-id>/`
+2. **Add Component**: `index.tsx` with default export and optional `css`
+3. **Add Manifest**: `manifest.json` with metadata
+4. **Register Template**: Update `src/templates/registry.ts`
+5. **Test**: Use `/api/render` endpoint
+
+## 📈 Performance Features
+
+- **ETag Caching**: Automatic cache invalidation on data changes
+- **304 Responses**: Efficient handling of unchanged content
+- **CDN Ready**: Cache-Control headers for edge caching
+- **Server-Side Rendering**: No client JavaScript required
+- **Dynamic Imports**: Optimized bundle splitting
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+1. **JWT Verification Failed**: Ensure `SHARED_JWT_SECRET` matches Main App
+2. **Template Not Found**: Check template registration in `registry.ts`
+3. **Data Validation Error**: Verify portfolio data matches schema
+4. **Build Errors**: Ensure all imports use correct path aliases
+
+### Debug Mode
+Set `NODE_ENV=development` for detailed error messages.
+
+---
+
+**Ready for Production**: The Templates App is fully implemented, tested, and ready for deployment. It provides a robust, scalable solution for portfolio rendering with comprehensive data handling and professional templates.
