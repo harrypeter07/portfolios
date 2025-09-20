@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyApiKey } from "@/src/lib/auth";
 
 export async function POST(req: Request) {
 	const startTime = Date.now();
@@ -6,6 +7,10 @@ export async function POST(req: Request) {
 	
 	try {
 		console.log(`[${requestId}] POST /api/render/export - Export request received`);
+		
+		// Verify API key authentication
+		await verifyApiKey(req.headers.get("authorization"));
+		console.log(`[${requestId}] API key verification successful`);
 		
 		// Log request details for future implementation
 		const body = await req.json().catch(() => ({}));

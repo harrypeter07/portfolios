@@ -1,5 +1,31 @@
 import { jwtVerify } from "jose";
 
+// API Key Authentication for service-to-service communication
+export function verifyApiKey(authorization: string | null) {
+	console.log("🔑 API Key Verification - Starting");
+	console.log("📋 Authorization header:", authorization ? `${authorization.substring(0, 20)}...` : "null");
+	
+	if (!authorization?.startsWith("Bearer ")) {
+		console.error("❌ API Key Verification - Invalid authorization format");
+		throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+	}
+	
+	const apiKey = authorization.slice(7);
+	console.log("🔑 API Key (first 10 chars):", apiKey.substring(0, 10) + "...");
+	
+	const validApiKeys = process.env.VALID_API_KEYS?.split(',') || [];
+	console.log("🔑 Valid API Keys count:", validApiKeys.length);
+	
+	if (!validApiKeys.includes(apiKey)) {
+		console.error("❌ API Key Verification - Invalid API key");
+		throw Object.assign(new Error("Forbidden"), { statusCode: 403 });
+	}
+	
+	console.log("✅ API Key Verification - Success");
+	return { apiKey, type: 'api-key' };
+}
+
+// Legacy JWT verification (kept for backward compatibility)
 export async function verifyServiceJwt(authorization: string | null) {
 	console.log("🔐 JWT Verification - Starting");
 	console.log("📋 Authorization header:", authorization ? `${authorization.substring(0, 20)}...` : "null");

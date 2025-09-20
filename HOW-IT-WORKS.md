@@ -41,11 +41,14 @@ if (payload.scope !== 'render') throw new Error('Forbidden');
 
 ### **3. Both Apps Use Same Secret**
 ```bash
-# Main App (.env.local)
+# Main App (.env.local) - runs on localhost:3000
 JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+TEMPLATES_APP_URL=http://localhost:3001  # Local development
 
-# Templates App (Vercel Environment Variables)
+# Templates App (Vercel Environment Variables) - runs on localhost:3001
 SHARED_JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+MAIN_API_BASE=http://localhost:3000  # Local development
+ALLOWED_ORIGINS=http://localhost:3000
 ```
 
 ## ✅ **Why This Works:**

@@ -14,7 +14,8 @@ export async function GET() {
 		
 		// Check environment variables
 		const envStatus = {
-			SHARED_JWT_SECRET: !!process.env.SHARED_JWT_SECRET,
+			VALID_API_KEYS: !!process.env.VALID_API_KEYS,
+			VALID_API_KEYS_COUNT: process.env.VALID_API_KEYS?.split(',').length || 0,
 			MAIN_API_BASE: !!process.env.MAIN_API_BASE,
 			ALLOWED_ORIGINS: !!process.env.ALLOWED_ORIGINS,
 			PREVIEW_JWT_SECRET: !!process.env.PREVIEW_JWT_SECRET

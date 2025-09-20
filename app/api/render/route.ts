@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyServiceJwt } from "@/src/lib/auth";
+import { verifyApiKey } from "@/src/lib/auth";
 import { buildETag, applyCachingHeaders } from "@/src/lib/cache";
 import { validateAndNormalize, getTemplateInfo } from "@/src/lib/renderer";
 import { renderComponentToString } from "@/src/lib/server-render";
@@ -11,9 +11,9 @@ export async function POST(req: Request) {
 	try {
 		console.log(`[${requestId}] POST /api/render - Starting render request`);
 		
-		// Verify JWT authentication
-		await verifyServiceJwt(req.headers.get("authorization"));
-		console.log(`[${requestId}] JWT verification successful`);
+		// Verify API key authentication
+		await verifyApiKey(req.headers.get("authorization"));
+		console.log(`[${requestId}] API key verification successful`);
 
 		const { templateId, data, options } = await req.json();
 		console.log(`[${requestId}] Template ID: ${templateId}, Username: ${data?.username || 'unknown'}`);
