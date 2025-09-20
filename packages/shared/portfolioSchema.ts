@@ -268,7 +268,41 @@ const analyticsSchema = z.object({
 	customEvents: z.array(z.string()).optional()
 }).optional();
 
-// Main portfolio schema
+// Database portfolio schema (what's stored in DB)
+export const databasePortfolioSchema = z.object({
+	_id: z.any().optional(),
+	id: z.string().optional(),
+	username: z.string(),
+	templateId: z.string(),
+	portfolioData: z.object({
+		personal: personalSchema,
+		about: aboutSchema,
+		experience: experienceSchema,
+		education: educationSchema,
+		skills: skillsSchema,
+		projects: projectsSchema,
+		achievements: achievementsSchema,
+		contact: contactSchema,
+		metadata: metadataSchema,
+		theme: themeSchema,
+		analytics: analyticsSchema
+	}),
+	createdAt: z.string().optional(),
+	updatedAt: z.string().optional()
+});
+
+// API request schema (what Main App sends to Templates App)
+export const renderRequestSchema = z.object({
+	username: z.string(),
+	templateId: z.string().optional(),
+	options: z.object({
+		draft: z.boolean().optional(),
+		version: z.string().optional(),
+		format: z.enum(["html", "pdf", "png"]).optional()
+	}).optional()
+});
+
+// Main portfolio schema (for backward compatibility)
 export const portfolioSchema = z.object({
 	// Template identification
 	templateId: z.string().optional(),
