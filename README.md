@@ -77,6 +77,8 @@ Authorization: Bearer <jwt>
 
 **304 Support**: Send `If-None-Match: "abc123..."` header to get 304 if content unchanged.
 
+**Logging**: Comprehensive request tracking with unique request IDs, timing, and error details.
+
 ### 2. GET `/api/templates/manifest`
 **Purpose**: Get list of available templates
 
@@ -94,12 +96,85 @@ Authorization: Bearer <jwt>
 ]
 ```
 
-### 3. GET `/preview/[username]` (Optional)
+**Headers**:
+- `Cache-Control`: `public, s-maxage=86400`
+- `X-Request-ID`: Unique request identifier
+- `X-Response-Time`: Response time in milliseconds
+
+**Logging**: Template count and list logging with performance metrics.
+
+### 3. POST `/api/render/export` (Future Feature)
+**Purpose**: Export rendered portfolios to PDF/PNG (not yet implemented)
+
+**Response**:
+```json
+{
+  "error": "Export functionality not implemented",
+  "message": "PDF/PNG export will be available in a future update",
+  "requestId": "abc123",
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Status**: 501 Not Implemented
+
+**Logging**: Request details logged for future implementation planning.
+
+### 4. GET `/api/status` (Health Check)
+**Purpose**: Service health check and system information
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "service": "Templates App",
+  "version": "1.0.0",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "requestId": "abc123",
+  "uptime": "3600s",
+  "templates": {
+    "count": 2,
+    "available": [
+      {
+        "id": "modern-resume",
+        "name": "Modern Resume",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "environment": {
+    "SHARED_JWT_SECRET": true,
+    "MAIN_API_BASE": true,
+    "ALLOWED_ORIGINS": true,
+    "PREVIEW_JWT_SECRET": false
+  },
+  "system": {
+    "nodeVersion": "v18.17.0",
+    "platform": "linux",
+    "uptime": 3600,
+    "memoryUsage": {...},
+    "environment": "production"
+  },
+  "endpoints": {
+    "render": "POST /api/render",
+    "manifest": "GET /api/templates/manifest",
+    "export": "POST /api/render/export (501 - Not implemented)",
+    "preview": "GET /preview/[username]",
+    "status": "GET /api/status"
+  }
+}
+```
+
+**Logging**: System health monitoring with environment and performance metrics.
+
+### 5. GET `/preview/[username]` (Optional)
 **Purpose**: Direct preview with signed token (for edge rewrites)
 
 **URL**: `https://templates.portume.com/preview/john_doe?token=<signed_jwt>`
 
 **Returns**: Full HTML page with embedded CSS
+
+**Logging**: Complete preview request tracking with error handling and performance metrics.
 
 ## 🔐 Security & Authentication
 
@@ -381,6 +456,117 @@ curl -X POST https://templates.portume.com/api/render \
 curl https://templates.portume.com/api/templates/manifest
 ```
 
+### Test Health Check
+```bash
+curl https://templates.portume.com/api/status
+```
+
+### Test Export Endpoint (Future Feature)
+```bash
+curl -X POST https://templates.portume.com/api/render/export \
+  -H "Authorization: Bearer <your-jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId": "modern-resume",
+    "format": "pdf",
+    "data": {...}
+  }'
+```
+
+## 📊 Monitoring & Logging
+
+### Request Tracking
+All API endpoints include comprehensive logging with:
+- **Unique Request IDs**: Each request gets a unique identifier for tracking
+- **Performance Metrics**: Response times and duration logging
+- **Error Tracking**: Detailed error logging with stack traces
+- **Request Details**: Template IDs, usernames, and operation types
+
+### Log Format
+```
+[abc123] POST /api/render - Starting render request
+[abc123] JWT verification successful
+[abc123] Template ID: modern-resume, Username: john_doe
+[abc123] Data validation successful
+[abc123] Template found: Modern Resume v1.0.0
+[abc123] Component rendered successfully, HTML length: 15420
+[abc123] Render completed successfully in 245ms
+```
+
+### Health Monitoring
+Use `/api/status` endpoint for:
+- Service health checks
+- Environment variable validation
+- Template availability
+- System performance metrics
+- Memory usage monitoring
+
+### Error Handling
+All endpoints return structured error responses:
+```json
+{
+  "error": "Template not found",
+  "requestId": "abc123",
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+## 🔧 Environment Variables Setup
+
+### Required Environment Variables
+```bash
+# JWT Secret (MUST match your Main App's JWT secret)
+SHARED_JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+
+# Main App API Base URL
+MAIN_API_BASE=https://portume.vercel.app
+
+# Allowed Origins (comma-separated)
+ALLOWED_ORIGINS=https://portume.vercel.app,http://localhost:3001
+
+# Preview JWT Secret (can use same as SHARED_JWT_SECRET)
+PREVIEW_JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+```
+
+### Quick Setup
+```bash
+# Generate new JWT secret
+node setup-env.js
+
+# Copy the generated environment variables
+# Set them in Vercel Dashboard (Templates App)
+# Set them in your Main App (.env.local)
+```
+
+### Vercel Deployment
+1. **Set Environment Variables** in Vercel Dashboard:
+   - Go to your project settings
+   - Navigate to Environment Variables
+   - Add all required variables above
+
+2. **Deploy**:
+   ```bash
+   vercel --prod
+   ```
+
+3. **Verify Deployment**:
+   ```bash
+   curl https://templates.portume.com/api/status
+   ```
+
+### Local Development
+```bash
+# Set environment variables
+$env:SHARED_JWT_SECRET="your_shared_jwt_secret_here"
+$env:MAIN_API_BASE="https://portume.vercel.app"
+
+# Start development server
+npm run dev
+
+# Test the API
+node test-quick.js
+```
+
 ## 📁 File Structure
 
 ```
@@ -438,6 +624,91 @@ templates-app/
 ### Debug Mode
 Set `NODE_ENV=development` for detailed error messages.
 
+## 🔗 Integration Status
+
+**✅ INTEGRATION COMPLETE**: The Main App has been successfully integrated with the Templates App for seamless template sharing and rendering.
+
+### Main App Integration Features:
+- **Template Discovery**: Automatically fetches and displays remote templates
+- **Enhanced API Routes**: 
+  - `GET /api/templates/manifest` - Fetches available templates from Templates App
+  - `POST /api/render-portfolio` - Renders portfolios using Templates App
+  - `GET /api/render-portfolio?username=<username>` - Alternative render endpoint
+- **Templates Demo Page**: Enhanced with remote templates section
+- **Error Handling**: Graceful fallback when Templates App is unavailable
+- **Visual Indicators**: Version numbers, tags, and source identification
+- **Preview Links**: Direct access to template previews
+
+### Current Setup:
+- **Main App**: `localhost:3000` (portfolio app)
+- **Templates App**: `localhost:3001` (templates service)
+- **Production URLs**: 
+  - Main App: `portume.vercel.app`
+  - Templates App: `templates.portume.com`
+
+### Environment Variables (Both Apps):
+```bash
+# Main App
+JWT_SECRET=your-super-secret-jwt-key-here
+SHARED_JWT_SECRET=your-super-secret-jwt-key-here
+TEMPLATES_BASE_URL=https://templates.portume.com  # Production
+# TEMPLATES_BASE_URL=http://localhost:3001  # Local testing
+
+# Templates App
+SHARED_JWT_SECRET=your-super-secret-jwt-key-here  # Must match Main App
+MAIN_API_BASE=https://portume.vercel.app
+ALLOWED_ORIGINS=https://portume.vercel.app
+```
+
+### Available Templates:
+- **`modern-resume`**: Professional resume with comprehensive sections
+- **`minimal-card`**: Lightweight profile card template
+
 ---
 
-**Ready for Production**: The Templates App is fully implemented, tested, and ready for deployment. It provides a robust, scalable solution for portfolio rendering with comprehensive data handling and professional templates.
+**🚀 READY FOR PRODUCTION**: The Templates App is fully implemented, tested, and integrated. Both apps are working together seamlessly with template discovery, rendering, and preview functionality.
+
+---
+
+## 🔗 Main App Integration (Quick Reference)
+
+### **Environment Variables**
+```bash
+# Main App (.env.local)
+JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+TEMPLATES_APP_URL=https://templates.portume.com
+
+# Templates App (Vercel Environment Variables)
+SHARED_JWT_SECRET=331c5e6ffa9f43ddc90044901c2559a47327052985024d1624b2bc98fd0c1e3a
+MAIN_API_BASE=https://portume.vercel.app
+ALLOWED_ORIGINS=https://portume.vercel.app
+```
+
+### **API Usage**
+```javascript
+// Render portfolio template
+const response = await fetch('https://templates.portume.com/api/render', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${jwt.sign({scope: 'render'}, JWT_SECRET)}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    templateId: 'modern-resume',
+    data: { username: 'user123', portfolioData: {...} }
+  })
+});
+
+const { html, css } = await response.json();
+```
+
+### **Available Templates**
+- `modern-resume` - Professional resume template
+- `minimal-card` - Simple profile card
+
+### **Endpoints**
+- `POST /api/render` - Render templates
+- `GET /api/templates/manifest` - List templates
+- `GET /api/status` - Health check
+
+**Deploy and integrate!** 🚀

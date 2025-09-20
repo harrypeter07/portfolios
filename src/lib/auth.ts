@@ -1,14 +1,65 @@
 import { jwtVerify } from "jose";
 
 export async function verifyServiceJwt(authorization: string | null) {
-	if (!authorization?.startsWith("Bearer ")) throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+	console.log("🔐 JWT Verification - Starting");
+	console.log("📋 Authorization header:", authorization ? `${authorization.substring(0, 20)}...` : "null");
+	
+	if (!authorization?.startsWith("Bearer ")) {
+		console.error("❌ JWT Verification - Invalid authorization format");
+		throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+	}
+	
 	const token = authorization.slice(7);
+	console.log("🎫 JWT Token (first 50 chars):", token.substring(0, 50) + "...");
+	
 	const secretValue = process.env.SHARED_JWT_SECRET || "";
-	if (!secretValue) throw Object.assign(new Error("Server misconfigured: SHARED_JWT_SECRET missing"), { statusCode: 500 });
-	const secret = new TextEncoder().encode(secretValue);
-	const { payload } = await jwtVerify(token, secret);
-	if ((payload as any).scope !== "render") throw Object.assign(new Error("Forbidden"), { statusCode: 403 });
-	return payload;
+	console.log("🔑 Secret available:", !!secretValue);
+	console.log("🔑 Secret length:", secretValue.length);
+	console.log("🔑 Secret (first 10 chars):", secretValue.substring(0, 10) + "...");
+	
+	if (!secretValue) {
+		console.error("❌ JWT Verification - SHARED_JWT_SECRET missing");
+		throw Object.assign(new Error("Server misconfigured: SHARED_JWT_SECRET missing"), { statusCode: 500 });
+	}
+	
+	try {
+		const secret = new TextEncoder().encode(secretValue);
+		console.log("🔐 JWT Verification - Attempting to verify token");
+		
+		const { payload } = await jwtVerify(token, secret);
+		console.log("✅ JWT Verification - Token verified successfully");
+		console.log("📋 JWT Payload:", {
+			scope: (payload as any).scope,
+			exp: (payload as any).exp,
+			iat: (payload as any).iat,
+			sub: (payload as any).sub
+		});
+		
+		if ((payload as any).scope !== "render") {
+			console.error("❌ JWT Verification - Invalid scope:", (payload as any).scope);
+			throw Object.assign(new Error("Forbidden"), { statusCode: 403 });
+		}
+		
+		console.log("✅ JWT Verification - Complete");
+		return payload;
+	} catch (error: any) {
+		console.error("❌ JWT Verification - Failed:", {
+			error: error.message,
+			name: error.name,
+			code: error.code
+		});
+		
+		// Add more specific error handling
+		if (error.name === 'JWSSignatureVerificationFailed') {
+			console.error("🔍 JWT Signature Issue - Possible causes:");
+			console.error("  1. Wrong JWT secret");
+			console.error("  2. Token was signed with different secret");
+			console.error("  3. Token is corrupted or invalid");
+			console.error("  4. Token was signed with different algorithm");
+		}
+		
+		throw error;
+	}
 }
 
 export async function verifyPreviewToken(token: string) {
