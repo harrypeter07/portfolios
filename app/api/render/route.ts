@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/src/lib/auth";
+import { buildETag, applyCachingHeaders } from "@/src/lib/cache";
+import { validateAndNormalize, getTemplateInfo } from "@/src/lib/renderer";
+import { renderComponentToString } from "@/src/lib/server-render";
+import { getPortfolioFromDB } from "@/src/lib/database";
 
 export async function POST(req: Request) {
 	const startTime = Date.now();
@@ -20,43 +24,73 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: "Username is required" }, { status: 400 });
 		}
 
-		// Forward request to Templates App for rendering
-		const templatesAppUrl = process.env.TEMPLATES_APP_URL || "http://localhost:3001";
-		const response = await fetch(`${templatesAppUrl}/api/render`, {
-			method: 'POST',
-			headers: {
-				'Authorization': req.headers.get("authorization") || "",
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username,
-				templateId,
-				options
-			})
+		// Fetch portfolio data from database
+		const portfolioData = await getPortfolioFromDB(username);
+		if (!portfolioData) {
+			console.error(`[${requestId}] Portfolio not found for username: ${username}`);
+			return NextResponse.json({ error: "Portfolio not found" }, { status: 404 });
+		}
+		console.log(`[${requestId}] Portfolio data fetched successfully`);
+
+		// Use templateId from request or fallback to portfolio data
+		const finalTemplateId = templateId || portfolioData.templateId;
+		
+		// Validate and normalize data
+		const validation = validateAndNormalize(portfolioData);
+		if (!validation.ok) {
+			console.error(`[${requestId}] Data validation failed:`, validation.error);
+			return NextResponse.json({ errors: validation.error }, { status: 400 });
+		}
+		console.log(`[${requestId}] Data validation successful`);
+
+		// Get template info
+		const templateInfo = getTemplateInfo(finalTemplateId);
+		if (!templateInfo) {
+			console.error(`[${requestId}] Template not found: ${finalTemplateId}`);
+			return NextResponse.json({ error: "Template not found" }, { status: 404 });
+		}
+		console.log(`[${requestId}] Template found: ${templateInfo.manifest.name} v${templateInfo.manifest.version}`);
+
+		// Render component to HTML
+		const { Component, manifest, css } = templateInfo;
+		const html = await renderComponentToString(Component, { data: validation.normalized });
+		console.log(`[${requestId}] Component rendered successfully, HTML length: ${html.length}`);
+
+		// Build ETag for caching
+		const etag = buildETag({
+			id: portfolioData._id || portfolioData.id || username,
+			updatedAt: portfolioData.updatedAt || "",
+			templateId: finalTemplateId,
+			templateVersion: manifest.version,
+			options
 		});
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error(`[${requestId}] Templates App error: ${response.status}`, errorText);
-			return NextResponse.json({ 
-				error: `Templates App error: ${response.status}`,
-				details: errorText
-			}, { status: response.status });
+		// Check for 304 Not Modified
+		const ifNoneMatch = req.headers.get("if-none-match");
+		if (ifNoneMatch && ifNoneMatch === etag) {
+			console.log(`[${requestId}] 304 Not Modified - ETag match: ${etag}`);
+			const res304 = new NextResponse(null, { status: 304 });
+			res304.headers.set("ETag", etag);
+			applyCachingHeaders(res304.headers);
+			return res304;
 		}
 
-		const result = await response.json();
+		// Return successful response
+		const res = NextResponse.json({
+			html,
+			css,
+			meta: {
+				templateId: finalTemplateId,
+				version: manifest.version,
+				renderedAt: new Date().toISOString()
+			}
+		});
+		applyCachingHeaders(res.headers);
+		res.headers.set("ETag", etag);
 		
 		const duration = Date.now() - startTime;
 		console.log(`[${requestId}] Render completed successfully in ${duration}ms`);
-		
-		// Return the HTML directly from Templates App
-		return new Response(result.html, {
-			headers: {
-				'Content-Type': 'text/html',
-				'Cache-Control': 'public, s-maxage=300',
-				'ETag': response.headers.get('ETag') || `"${Date.now()}"`
-			}
-		});
+		return res;
 		
 	} catch (e: any) {
 		const duration = Date.now() - startTime;

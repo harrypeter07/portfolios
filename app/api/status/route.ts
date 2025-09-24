@@ -51,7 +51,7 @@ export async function GET() {
 				render: 'POST /api/render',
 				manifest: 'GET /api/templates/manifest',
 				export: 'POST /api/render/export (501 - Not implemented)',
-				preview: 'GET /preview/[username]',
+				preview: 'GET /preview/[previewId]',
 				status: 'GET /api/status'
 			}
 		};
