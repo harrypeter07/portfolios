@@ -188,7 +188,16 @@ async function testEndpoint(url, method = 'GET', body = null) {
 
 		console.log(`\n🧪 Testing ${method} ${url}`);
 		const response = await fetch(`${API_BASE}${url}`, options);
-		const data = await response.json();
+		const contentType = response.headers.get('content-type') || '';
+		let data;
+		if (contentType.includes('application/json')) {
+			data = await response.json();
+		} else {
+			const text = await response.text();
+			console.log(`⚠ Non-JSON response (status ${response.status}):`);
+			console.log(text.slice(0, 400));
+			return null;
+		}
 
 		if (response.ok) {
 			console.log(`✅ Success (${response.status}):`, {
@@ -214,6 +223,10 @@ async function runTests() {
 	console.log('🚀 Starting Template Flow Tests');
 	console.log(`📡 API Base: ${API_BASE}`);
 	console.log(`🔑 API Key: ${API_KEY.substring(0, 10)}...`);
+
+	// Pre-flight: Status check (helps surface server/env errors)
+	console.log('\n🩺 Pre-flight: Status endpoint');
+	await testEndpoint('/api/status');
 
 	// Test 1: Get Templates
 	console.log('\n📋 Test 1: Fetching Templates');

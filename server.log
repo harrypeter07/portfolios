@@ -1,0 +1,108 @@
+
+[31m✘[39m next.js v15.5.2 is [31mnot yet supported[39m in the Community edition of [33mConsole Ninja[39m.
+We are working hard on it for you [36mhttps://tinyurl.com/3h9mtwra[39m.
+
+Estimated release dates:
+  - Community users: [36maround 26th October, 2025 [1m(subject to team availability)[22m[39m
+[33m  - PRO users[39m:       [1m[32mpriority access is available now[39m[22m
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\ASUS\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\ASUS\Documents\SECOND SEMISTER\agent\portfolioss\package-lock.json
+
+
+[31m✘[39m next.js v15.5.2 is [31mnot yet supported[39m in the Community edition of [33mConsole Ninja[39m.
+We are working hard on it for you [36mhttps://tinyurl.com/3h9mtwra[39m.
+
+Estimated release dates:
+  - Community users: [36maround 26th October, 2025 [1m(subject to team availability)[22m[39m
+[33m  - PRO users[39m:       [1m[32mpriority access is available now[39m[22m
+
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3001
+   - Network:      http://10.62.204.36:3001
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 9.9s
+ ○ Compiling /api/status ...
+ ✓ Compiled /api/status in 5.3s (370 modules)
+[4qrmf] GET /api/status - Health check request
+[4qrmf] Status check completed in 2ms - 2 templates available
+ GET /api/status 200 in 5966ms
+ ○ Compiling /api/templates ...
+ ✓ Compiled /api/templates in 2.5s (441 modules)
+[d4kg6l] GET /api/templates - Fetching templates
+🔑 API Key Verification - Starting
+📋 Authorization header: Bearer 85af0b4044441...
+🔑 API Key (first 10 chars): 85af0b4044...
+🔑 Valid API Keys count: 1
+✅ API Key Verification - Success
+[d4kg6l] API key verification successful
+[d4kg6l] Templates request completed in 2ms - 2 templates found
+ GET /api/templates 200 in 2751ms
+ ○ Compiling /api/templates/preview ...
+ ✓ Compiled /api/templates/preview in 1125ms (460 modules)
+[gcof26] POST /api/templates/preview - Creating template preview
+🔑 API Key Verification - Starting
+📋 Authorization header: Bearer 85af0b4044441...
+🔑 API Key (first 10 chars): 85af0b4044...
+🔑 Valid API Keys count: 1
+✅ API Key Verification - Success
+[gcof26] API key verification successful
+[gcof26] Template ID: modern-resume, Preview mode: true
+[gcof26] Data validation successful
+[gcof26] Template found: Modern Resume v1.0.0
+[gcof26] Component rendered successfully, HTML length: 130
+✅ Connected to MongoDB
+✅ Portfolio created with ID: 68d4428f3067afbaf143ac06
+[gcof26] Preview created successfully in 1433ms
+ POST /api/templates/preview 200 in 4129ms
+ ✓ Compiled /api/templates/publish in 512ms (462 modules)
+[fi3amk] POST /api/templates/publish - Publishing portfolio
+🔑 API Key Verification - Starting
+📋 Authorization header: Bearer 85af0b4044441...
+🔑 API Key (first 10 chars): 85af0b4044...
+🔑 Valid API Keys count: 1
+✅ API Key Verification - Success
+[fi3amk] API key verification successful
+[fi3amk] Username: testuser, Template: modern-resume, Type: component
+✅ Connected to MongoDB
+Portfolio not found for username: testuser
+[fi3amk] Data validation successful
+✅ Portfolio created with ID: 68d442913067afbaf143ac07
+[fi3amk] Portfolio created with ID: 68d442913067afbaf143ac07
+[fi3amk] Portfolio published successfully in 939ms
+ POST /api/templates/publish 200 in 1684ms
+ ○ Compiling /api/portfolio/render/[username] ...
+ ✓ Compiled /api/portfolio/render/[username] in 540ms (464 modules)
+Error: Route "/api/portfolio/render/[username]" used `params.username`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app\api\portfolio\render\[username]\route.ts:14:66)
+  12 | 	
+  13 | 	try {
+> 14 | 		console.log(`[${requestId}] GET /api/portfolio/render/${params.username} - Direct portfolio render`);
+     | 		                                                               ^
+  15 | 		
+  16 | 		const { username } = params;
+  17 | 		
+[xbji4] GET /api/portfolio/render/testuser - Direct portfolio render
+Error: Route "/api/portfolio/render/[username]" used `params.username`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (app\api\portfolio\render\[username]\route.ts:16:11)
+  14 | 		console.log(`[${requestId}] GET /api/portfolio/render/${params.username} - Direct portfolio render`);
+  15 | 		
+> 16 | 		const { username } = params;
+     | 		        ^
+  17 | 		
+  18 | 		// Fetch portfolio data from database
+  19 | 		const portfolioData = await getPortfolioFromDB(username);
+✅ Connected to MongoDB
+✅ Portfolio found for username: testuser
+[xbji4] Portfolio data fetched successfully
+[xbji4] Data validation successful
+[xbji4] Template found: Modern Resume v1.0.0
+[xbji4] Component rendered successfully, HTML length: 130
+[xbji4] Direct portfolio render completed in 1176ms
+ GET /api/portfolio/render/testuser 200 in 5583ms
