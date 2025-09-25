@@ -13,8 +13,16 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 	const { previewId } = await params;
 	
 	try {
-		// Fetch portfolio data from database
-		const portfolioData = await getPreviewPortfolio(previewId);
+        // Fetch portfolio data from database
+        const portfolioData = await getPreviewPortfolio(previewId);
+
+        // Basic received data logging (privacy-safe)
+        console.log('[preview] page load', {
+            previewId,
+            hasPortfolio: Boolean(portfolioData),
+            templateId: portfolioData?.templateId,
+            expiresAt: portfolioData?.expiresAt,
+        });
 		
 		if (!portfolioData) {
 			notFound();
@@ -23,22 +31,48 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 		// Expiration check is handled in getPreviewPortfolio
 
 		// Validate and normalize data
-		const validation = validateAndNormalize(portfolioData);
+        const validation = validateAndNormalize(portfolioData);
+        if (!validation) {
+            console.error('[preview] validation function returned null/undefined');
+            notFound();
+        }
 		if (!validation.ok) {
 			console.error('Data validation failed:', validation.error);
 			notFound();
 		}
 
 		// Get template info
-		const templateInfo = getTemplateInfo(portfolioData.templateId);
+        const templateInfo = getTemplateInfo(portfolioData.templateId);
 		if (!templateInfo) {
 			console.error('Template not found:', portfolioData.templateId);
 			notFound();
 		}
 
 		// Render component to HTML
-		const { Component } = templateInfo;
-		const html = await renderComponentToString(Component, { data: validation.normalized });
+        const { Component, css } = templateInfo as any;
+        if (!Component) {
+            console.error('[preview] template missing Component for', portfolioData.templateId);
+            notFound();
+        }
+
+        // Detailed data logging (sizes and top-level keys only)
+        try {
+            const topLevelKeys = Object.keys(validation.normalized || {});
+            const counts = {
+                experience: Array.isArray((validation.normalized as any)?.experience) ? (validation.normalized as any).experience.length : 0,
+                projects: Array.isArray((validation.normalized as any)?.projects) ? (validation.normalized as any).projects.length : 0,
+                skills: Array.isArray((validation.normalized as any)?.skills?.technical) ? (validation.normalized as any).skills.technical.length : 0,
+            };
+            console.log('[preview] normalized stats', { topLevelKeys, counts });
+        } catch (e) {
+            console.warn('[preview] could not compute normalized stats');
+        }
+
+        const html = await renderComponentToString(Component, { data: validation.normalized });
+        if (!html) {
+            console.error('[preview] render returned empty HTML');
+            notFound();
+        }
 
 		// Return the rendered HTML with preview styling
 		return (
@@ -72,6 +106,10 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 						}
 					`
 				}} />
+                {/* Inject template-specific CSS if available */}
+                {css ? (
+                    <style dangerouslySetInnerHTML={{ __html: String(css) }} />
+                ) : null}
 				<div className="preview-container">
 					<div className="preview-banner">
 						<span>🔍 Preview Mode</span>
