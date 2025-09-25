@@ -10,7 +10,7 @@ interface PreviewPageProps {
 }
 
 export default async function PreviewPage({ params }: PreviewPageProps) {
-	const { previewId } = params;
+	const { previewId } = await params;
 	
 	try {
 		// Fetch portfolio data from database
@@ -42,43 +42,47 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 
 		// Return the rendered HTML with preview styling
 		return (
-			<div className="preview-container">
-				<div className="preview-banner">
-					<span>🔍 Preview Mode</span>
-					<span>Template: {portfolioData.templateId}</span>
-					{portfolioData.expiresAt && (
-						<span>Expires: {new Date(portfolioData.expiresAt).toLocaleString()}</span>
-					)}
+			<>
+				<style dangerouslySetInnerHTML={{
+					__html: `
+						.preview-container {
+							position: relative;
+						}
+						.preview-banner {
+							position: fixed;
+							top: 0;
+							left: 0;
+							right: 0;
+							background: #3B82F6;
+							color: white;
+							padding: 8px 16px;
+							font-size: 14px;
+							font-weight: 500;
+							z-index: 1000;
+							display: flex;
+							gap: 16px;
+							align-items: center;
+							box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+						}
+						.preview-banner span {
+							background: rgba(255,255,255,0.2);
+							padding: 4px 8px;
+							border-radius: 4px;
+							font-size: 12px;
+						}
+					`
+				}} />
+				<div className="preview-container">
+					<div className="preview-banner">
+						<span>🔍 Preview Mode</span>
+						<span>Template: {portfolioData.templateId}</span>
+						{portfolioData.expiresAt && (
+							<span>Expires: {new Date(portfolioData.expiresAt).toLocaleString()}</span>
+						)}
+					</div>
+					<div dangerouslySetInnerHTML={{ __html: html }} />
 				</div>
-				<div dangerouslySetInnerHTML={{ __html: html }} />
-				<style jsx>{`
-					.preview-container {
-						position: relative;
-					}
-					.preview-banner {
-						position: fixed;
-						top: 0;
-						left: 0;
-						right: 0;
-						background: #3B82F6;
-						color: white;
-						padding: 8px 16px;
-						font-size: 14px;
-						font-weight: 500;
-						z-index: 1000;
-						display: flex;
-						gap: 16px;
-						align-items: center;
-						box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-					}
-					.preview-banner span {
-						background: rgba(255,255,255,0.2);
-						padding: 4px 8px;
-						border-radius: 4px;
-						font-size: 12px;
-					}
-				`}</style>
-			</div>
+			</>
 		);
 		
 	} catch (error) {
@@ -89,6 +93,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 
 // Generate metadata for preview
 export async function generateMetadata({ params }: PreviewPageProps) {
+	const { previewId } = await params;
 	return {
 		title: 'Portfolio Preview',
 		description: 'Preview of portfolio template',

@@ -1,4 +1,6 @@
+// app/api/render/export/route.ts
 import { NextResponse } from "next/server";
+
 import { verifyApiKey } from "@/src/lib/auth";
 
 export async function POST(req: Request) {
