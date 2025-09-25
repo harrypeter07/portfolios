@@ -5,7 +5,9 @@ import minimalManifest from "@/templates/minimal-card/manifest.json";
 
 const registry = {
 	"modern-resume": { Component: ModernResume, manifest: modernManifest, css: modernCss || "" },
-	"minimal-card": { Component: MinimalCard, manifest: minimalManifest, css: minimalCss || "" }
+	"minimal-card": { Component: MinimalCard, manifest: minimalManifest, css: minimalCss || "" },
+	// Alias to support legacy IDs from the main app
+	"cleanfolio": { Component: ModernResume, manifest: modernManifest, css: modernCss || "" }
 } as const;
 
 export type TemplateId = keyof typeof registry;

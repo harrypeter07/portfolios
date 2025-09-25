@@ -41,19 +41,8 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: "Portfolio data is required" }, { status: 400 });
 		}
 
-		// Check if portfolio already exists
-		const existingPortfolio = await getPortfolioFromDB(username);
-		if (existingPortfolio) {
-			console.log(`[${requestId}] Portfolio already exists for username: ${username}`);
-			return NextResponse.json({ 
-				error: "Portfolio already exists for this username",
-				existingPortfolio: {
-					username: existingPortfolio.username,
-					templateId: existingPortfolio.templateId,
-					createdAt: existingPortfolio.createdAt
-				}
-			}, { status: 409 });
-		}
+        // Upsert behavior: update if exists, else create
+        const existingPortfolio = await getPortfolioFromDB(username);
 
 		// Validate and normalize portfolio data
 		const validation = validateAndNormalize(portfolioData);
@@ -78,18 +67,28 @@ export async function POST(req: Request) {
 			updatedAt: new Date().toISOString()
 		};
 
-		// Create portfolio in database
-		const result = await createPortfolio(portfolioStructure);
-		console.log(`[${requestId}] Portfolio created with ID: ${result.insertedId}`);
+        let insertedId: any = null;
+        if (existingPortfolio) {
+            // Update existing
+            const { updatePortfolio } = await import("@/src/lib/database");
+            await updatePortfolio(username, portfolioStructure);
+            insertedId = existingPortfolio._id || existingPortfolio.id || username;
+            console.log(`[${requestId}] Portfolio updated for username: ${username}`);
+        } else {
+            // Create new
+            const result = await createPortfolio(portfolioStructure);
+            insertedId = result.insertedId;
+            console.log(`[${requestId}] Portfolio created with ID: ${insertedId}`);
+        }
 
 		// Generate URLs
 		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
 		const portfolioUrl = `${baseUrl}/portfolio/${username}`;
-		const previewUrl = `${baseUrl}/preview/${result.insertedId}`;
+        const previewUrl = `${baseUrl}/preview/${insertedId}`;
 
 		const response = {
 			success: true,
-			portfolioId: result.insertedId,
+            portfolioId: insertedId,
 			username,
 			portfolioUrl,
 			previewUrl,
